@@ -1,8 +1,3 @@
 node_modules/
-docker-compose.yml
 .wwebjs_cache/
 .wwebjs_auth/
-WebScraper/events.json
-WebScraper/fiisdata.json
-**/**.pyc
-.env

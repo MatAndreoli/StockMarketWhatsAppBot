@@ -1,19 +1,12 @@
 const logger = require('../logger/loggerWinston');
 const axios = require('axios');
-const path = require('path');
-const { readFile } = require('fs/promises');
-const { API_URL } = require('../vars');
 
 const boldStr = (str) => (str ? str.replace(/^/, '*').replace(/$/, '*') : '');
 
-const buildEventsMsg = async () => {
+const buildEventsMsg = async (data) => {
   let msg = [];
-  const data = await readFile(
-    path.resolve(__dirname, '../../WebScraper/fiisdata.json'),
-    { encoding: 'utf8' }
-  );
 
-  JSON.parse(data).forEach((value) => {
+  data.forEach((value) => {
     const rendDistribution = value.rend_distribution || {};
     const lastManagementReport = value.last_management_report || {};
 
@@ -63,12 +56,12 @@ const getFiisData = async (client, from, message) => {
 
     client.sendMessage(
       from,
-      'Scraping https://fundsexplorer.com.br/funds/:fii/ to get the data, it will take a while...'
+      'Scraping https://fundsexplorer.com.br/funds/ to get the data, it will take a while...'
     );
 
-    await axios.get(`${API_URL}/fiis?fiis=${fiis}`);
+    const result = await axios.get(`https://stockmarketfunction.azurewebsites.net/api/fiis?fiis=${fiis}`);
 
-    const msg = await buildEventsMsg();
+    const msg = await buildEventsMsg(result.data);
     msg.forEach((msg) => client.sendMessage(from, msg));
 
     client.sendMessage(

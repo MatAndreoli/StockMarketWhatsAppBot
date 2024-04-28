@@ -1,0 +1,4 @@
+node_modules/
+README.md
+.wwebjs_cache/
+.wwebjs_auth/

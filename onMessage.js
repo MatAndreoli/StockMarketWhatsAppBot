@@ -1,5 +1,4 @@
 const logger = require('./logger/loggerWinston');
-const getUnisalEvents = require('./usecases/unisalEvents');
 const getFiisData = require('./usecases/fiisData');
 
 const onMessage = async (client, message) => {
@@ -7,10 +6,6 @@ const onMessage = async (client, message) => {
   logger.info(`Incoming message: ${body}`);
 
   switch (true) {
-    case body.includes('!events'):
-      await getUnisalEvents(client, from, body);
-      break;
-
     case body.includes('!fiis'):
       await getFiisData(client, from, body);
       break;
