@@ -63,11 +63,6 @@ const getFiisData = async (client, from, message) => {
 
     const msg = await buildEventsMsg(result.data);
     msg.forEach((msg) => client.sendMessage(from, msg));
-
-    client.sendMessage(
-      from,
-      'For more info about FIIs, you can access https://fundsexplorer.com.br/'
-    );
   } catch (e) {
     logger.error(`Some error occurred: ${e}`);
     client.sendMessage(from, `Some error occurred: ${e}`);
