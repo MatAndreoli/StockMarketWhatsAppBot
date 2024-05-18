@@ -7,9 +7,7 @@ const client = new Client({
   puppeteer: {
     args: ['--no-sandbox'],
   },
-  authStrategy: new LocalAuth({
-    dataPath: '/app/wwebjsauth',
-  }),
+  authStrategy: new LocalAuth(),
 });
 
 client.initialize();
