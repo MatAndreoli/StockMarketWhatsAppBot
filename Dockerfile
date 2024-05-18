@@ -21,6 +21,9 @@ ENV NODE_PATH=$NVM_DIR/versions/node/v$NODE_VERSION/lib/node_modules \
 
 WORKDIR /app
 
+RUN mkdir /app/wwebjsauth
+RUN chmod -R 777 /app/wwebjsauth
+
 COPY package*.json ./
 
 RUN npm install --production
