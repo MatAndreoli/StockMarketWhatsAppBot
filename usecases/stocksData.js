@@ -79,11 +79,12 @@ const getStocksData = async (client, from, message) => {
     console.log('***************************');
     console.log('***************************');
     console.log('***************************');
-    console.log(tt.data);
+    console.log(tt);
 
     const msg = await buildEventsMsg(result.data, showDividends);
     msg.forEach((msg) => client.sendMessage(from, msg));
   } catch (e) {
+    console.log(e)
     logger.error(`Some error occurred: ${e}`);
     client.sendMessage(from, `Some error occurred: ${e}`);
   }
