@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { getRandom } = require('random-useragent');
 const logger = require('../logger/loggerWinston');
 const { getMessageData, boldStr } = require('./getMessageData');
 
@@ -31,11 +30,9 @@ const buildEventsMsg = async (data, showDividends) => {
       str += `*Tipo*\t\t*Data Com*\t\t*Pagamento*\t\t*Valor*\n`;
 
       value.dividends_history.forEach((value, i) => {
-        // str += `${i + 1} Tipo: ${boldStr(value.type)}\n`;
-        // str += `- Data Com: ${boldStr(value.data_com)}\n`;
-        // str += `- Pagamento: ${boldStr(value.pay_day)}\n`;
-        // str += `- Valor: ${boldStr(value.value)}\n`;
-        str += `${boldStr(value.type)}\t\t${boldStr(value.data_com)}\t\t${boldStr(value.pay_day)}\t\t${boldStr(value.value)}\n`;
+        str += `${boldStr(value.type)}\t\t${boldStr(
+          value.data_com
+        )}\t\t${boldStr(value.pay_day)}\t\t${boldStr(value.value)}\n`;
       });
     }
     str += `For more info about this Stock, access: ${boldStr(value.url)}`;
@@ -63,33 +60,9 @@ const getStocksData = async (client, from, message) => {
       `https://stockmarketfunction.azurewebsites.net/api/stocks?stocks=${stocks}`
     );
 
-    const formData = new FormData();
-    formData.append('year', '2024');
-    formData.append('code', 'ITSA3');
-    const tt = await axios.post(
-      'https://statusinvest.com.br/acao/getassetreports',
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          'User-Agent': getRandom(),
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          Referer: 'https://statusinvest.com.br/',
-        },
-      }
-    );
-    console.log('***************************');
-    console.log('***************************');
-    console.log('***************************');
-    console.log('***************************');
-    console.log(tt);
-
     const msg = await buildEventsMsg(result.data, showDividends);
     msg.forEach((msg) => client.sendMessage(from, msg));
   } catch (e) {
-    console.log(e)
     logger.error(`Some error occurred: ${e}`);
     client.sendMessage(from, `Some error occurred: ${e}`);
   }
