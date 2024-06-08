@@ -1,7 +1,6 @@
-const logger = require('../logger/loggerWinston');
 const axios = require('axios');
-
-const boldStr = (str) => (str ? str.replace(/^/, '*').replace(/$/, '*') : '');
+const logger = require('../logger/loggerWinston');
+const { getMessageData, boldStr } = require('./getMessageData');
 
 const buildEventsMsg = async (data) => {
   let msg = [];
@@ -14,12 +13,14 @@ const buildEventsMsg = async (data) => {
     str += `Nome: ${boldStr(value.name)}\n`;
     str += `Tipo: ${boldStr(value.fii_type)}\n`;
     str += `Preço atual: ${boldStr(value.current_price)}\n`;
-    str += `Status: ${boldStr(value.status)} (${
+    str += `Status: ${boldStr(value.status)} \`(${
       value.status.includes('-') ? 'baixa' : 'alta'
-    })\n`;
+    })\`\n`;
     str += `Liquidez Média Diária: ${boldStr(value.average_daily)}\n`;
     str += `Último dividendo: ${boldStr(value.last_dividend)}\n`;
-    str += `Dividend Yield: ${boldStr(value.dividend_yield)} (últ. 12 meses)\n`;
+    str += `Dividend Yield: ${boldStr(
+      value.dividend_yield
+    )} \`(últ. 12 meses)\`\n`;
     str += `Último Dividend Yield: ${boldStr(value.last_dividend_yield)}\n`;
     str += `Patrimônio Líquido: ${boldStr(value.net_worth)}\n`;
     str += `P/VP: ${boldStr(value.p_vp)}\n`;
@@ -41,25 +42,20 @@ const buildEventsMsg = async (data) => {
   return msg;
 };
 
-const getMsgFiis = (msg) => {
-  const [, ...fiis] = msg
-    .replaceAll(/(\,\s+|\,|\s+\,\s+|\s+)/g, ' ')
-    .split(' ');
-  return fiis.join(',');
-};
-
 const getFiisData = async (client, from, message) => {
   try {
-    const fiis = getMsgFiis(message);
+    const fiis = getMessageData(message);
 
     logger.info(`Retrieving FIIs: ${fiis.replaceAll(',', ' ')}`);
 
-    client.sendMessage(
+    await client.sendMessage(
       from,
       'Scraping https://fundsexplorer.com.br/funds/ to get the data, it will take a while...'
     );
 
-    const result = await axios.get(`https://stockmarketfunction.azurewebsites.net/api/fiis?fiis=${fiis}`);
+    const result = await axios.get(
+      `https://stockmarketfunction.azurewebsites.net/api/fiis?fiis=${fiis}`
+    );
 
     const msg = await buildEventsMsg(result.data);
     msg.forEach((msg) => client.sendMessage(from, msg));
