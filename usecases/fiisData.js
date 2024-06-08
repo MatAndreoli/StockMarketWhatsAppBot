@@ -1,8 +1,9 @@
 const axios = require('axios');
 const logger = require('../logger/loggerWinston');
 const { getMessageData, boldStr } = require('./getMessageData');
+const shortenUrl = require('./shortenUrl');
 
-const buildEventsMsg = async (data) => {
+const buildEventsMsg = (data) => {
   let msg = [];
 
   data.forEach((value) => {
@@ -31,15 +32,26 @@ const buildEventsMsg = async (data) => {
     )}\n`;
     str += `- Pagamento: ${boldStr(rendDistribution.future_pay_day || '')}\n`;
     str += `- Data com: ${boldStr(rendDistribution.data_com || '')}\n`;
-    str += `Último Relatório Gerencial: (${boldStr(
+    str += `Último Relatório Gerencial: \`(${
       lastManagementReport.date || ''
-    )}) ${boldStr(lastManagementReport.link || '')}\n`;
-    str += `For more info about this FII, access: ${boldStr(value.url)}`;
+    })\` ${boldStr(lastManagementReport.link || '')}\n`;
+    str += `> \`For more info about this FII, access: ${value.url}\``;
 
     msg.push(str);
   });
 
   return msg;
+};
+
+const normalizeData = async (data) => {
+  const normalizedData = await data.map(async (value) => {
+    const lastManagementReportLink = await shortenUrl(
+      value.last_management_report.link
+    );
+    value.last_management_report.link = lastManagementReportLink;
+    return value;
+  });
+  return await Promise.all(normalizedData);
 };
 
 const getFiisData = async (client, from, message) => {
@@ -50,14 +62,16 @@ const getFiisData = async (client, from, message) => {
 
     await client.sendMessage(
       from,
-      'Scraping https://fundsexplorer.com.br/funds/ to get the data, it will take a while...'
+      'Scraping *https://fundsexplorer.com.br/funds/* to get the data, it will take a while...'
     );
 
     const result = await axios.get(
       `https://stockmarketfunction.azurewebsites.net/api/fiis?fiis=${fiis}`
     );
 
-    const msg = await buildEventsMsg(result.data);
+    const stocksData = await normalizeData(result.data);
+
+    const msg = buildEventsMsg(stocksData);
     msg.forEach((msg) => client.sendMessage(from, msg));
   } catch (e) {
     logger.error(`Some error occurred: ${e}`);
