@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { getRandom } = require('random-useragent');
 const logger = require('../logger/loggerWinston');
 const { getMessageData, boldStr } = require('./getMessageData');
 
@@ -61,6 +62,24 @@ const getStocksData = async (client, from, message) => {
     const result = await axios.get(
       `https://stockmarketfunction.azurewebsites.net/api/stocks?stocks=${stocks}`
     );
+
+    const formData = new FormData();
+    formData.append('year', '2024');
+    formData.append('code', 'ITSA3');
+    const tt = await axios.post(
+      'https://statusinvest.com.br/acao/getassetreports',
+      formData,
+      {
+        headers: {
+          'User-Agent': getRandom(),
+        },
+      }
+    );
+    console.log('***************************');
+    console.log('***************************');
+    console.log('***************************');
+    console.log('***************************');
+    console.log(tt.data);
 
     const msg = await buildEventsMsg(result.data, showDividends);
     msg.forEach((msg) => client.sendMessage(from, msg));
