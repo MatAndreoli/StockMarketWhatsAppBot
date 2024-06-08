@@ -45,10 +45,12 @@ const buildEventsMsg = (data) => {
 
 const normalizeData = async (data) => {
   const normalizedData = await data.map(async (value) => {
-    const lastManagementReportLink = await shortenUrl(
-      value.last_management_report.link
-    );
-    value.last_management_report.link = lastManagementReportLink;
+    if (value.last_management_report?.link) {
+      const lastManagementReportLink = await shortenUrl(
+        value.last_management_report.link
+      );
+      value.last_management_report.link = lastManagementReportLink;
+    }
     return value;
   });
   return await Promise.all(normalizedData);
