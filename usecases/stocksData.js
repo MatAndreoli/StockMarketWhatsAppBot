@@ -74,8 +74,8 @@ const buildEventsMsg = (data, showDividends) => {
       });
     }
 
-    str += `> \`Para mais relatórios dessa ação, accesse: ${value.reports_link}\`\n`;
-    str += `> \`Para mais info sobre essa ação, accesse: ${value.url}\``;
+    str += `> \`Para mais relatórios dessa ação, acesse: ${value.reports_link}\`\n`;
+    str += `> \`Para mais info sobre essa ação, acesse: ${value.url}\``;
 
     msg.push(str);
   });

@@ -62,7 +62,7 @@ const buildEventsMsg = (data) => {
     str += `- Pagamento: ${modifiedValues.lastRendDistribution.payDay}\n`;
     str += `- Data com: ${modifiedValues.lastRendDistribution.dataCom}\n`;
     str += `Último Relatório Gerencial: ${modifiedValues.lastManagementReport}\n`;
-    str += `> \`Para mais info sobre esse FII, accesse: ${value.url}\``;
+    str += `> \`Para mais info sobre esse FII, acesse: ${value.url}\``;
 
     msg.push(str);
   });
