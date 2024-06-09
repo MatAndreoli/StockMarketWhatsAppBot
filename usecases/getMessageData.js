@@ -5,6 +5,27 @@ const getMessageData = (msg) => {
   return fiis.join(',');
 };
 
-const boldStr = (str) => (str ? str.replace(/^/, '*').replace(/$/, '*') : '');
+const boldStr = (str) => str.replace(/^/, '*').replace(/$/, '*');
 
-module.exports = { getMessageData, boldStr };
+const modifyStr = (str, options = {}) => {
+  if (!!!str) return '';
+
+  var modifiedStr;
+  if (options) {
+    const { bold = false, span = undefined } = options;
+    if (bold) {
+      modifiedStr = boldStr(str);
+    }
+    if (span) {
+      const { position, value } = span;
+      const modifiedValue = `\`(${value})\``;
+      modifiedStr =
+        position == 'end'
+          ? `${modifiedStr} ${modifiedValue}`
+          : `${modifiedValue} ${modifiedStr}`;
+    }
+  }
+  return modifiedStr;
+};
+
+module.exports = { getMessageData, modifyStr };
