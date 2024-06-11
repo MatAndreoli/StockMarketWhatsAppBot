@@ -86,11 +86,11 @@ const buildEventsMsg = (data, showDividends) => {
 const normalizeData = async (data) => {
   const normalizedData = await data.map(async (value) => {
     const reportsLink = await shortenUrl(value.reports_link);
-    const lastManagementReportLink = await shortenUrl(
-      value.last_management_report?.link
-    );
     value.reports_link = reportsLink;
-    if (value.last_management_report?.link) {
+    if (!!value.last_management_report?.link) {
+      const lastManagementReportLink = await shortenUrl(
+        value.last_management_report?.link
+      );
       value.last_management_report.link = lastManagementReportLink;
     }
     return value;
