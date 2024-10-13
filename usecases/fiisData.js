@@ -1,7 +1,8 @@
-const axios = require('axios');
 const logger = require('../logger/loggerWinston');
 const { getMessageData, modifyStr } = require('./getMessageData');
-const shortenUrl = require('./shortenUrl');
+const getNormalizedFiisData = require('./getNormalizedFiisData');
+
+const MAX_RETRIES = 2;
 
 const buildEventsMsg = (data) => {
   let msg = [];
@@ -71,23 +72,13 @@ const buildEventsMsg = (data) => {
   return msg;
 };
 
-const normalizeData = async (data) => {
-  const normalizedData = await data.map(async (value) => {
-    const reportsLink = await shortenUrl(value.reports_link);
-    value.reports_link = reportsLink;
-    if (!!value.last_management_report?.link) {
-      const lastManagementReportLink = await shortenUrl(
-        value.last_management_report?.link
-      );
-      value.last_management_report.link = lastManagementReportLink;
-    }
-    return value;
-  });
-  return await Promise.all(normalizedData);
-};
-
-const getFiisData = async (client, from, message) => {
+const getFiisData = async (client, from, message, retry = 0) => {
   try {
+    if (retry >= MAX_RETRIES) {
+      client.sendMessage(from, 'Reached max attempts to get fiis data. Try again...');
+      return;
+    }
+
     const fiis = getMessageData(message);
 
     logger.info(`Retrieving FIIs: ${fiis.replaceAll(',', ' ')}`);
@@ -97,18 +88,22 @@ const getFiisData = async (client, from, message) => {
       'Scraping *https://fundsexplorer.com.br/funds/* para pegar os dados, isso pode levar um tempo...'
     );
 
-    const result = await axios.get(
-      `https://stockmarketfunction.azurewebsites.net/api/fiis?fiis=${fiis}`
-    );
+    const [fiisResponse, fiisWithoutReport] = await getNormalizedFiisData(fiis);
 
-    const stocksData = await normalizeData(result.data);
-
-    const msg = buildEventsMsg(stocksData);
+    const msg = buildEventsMsg(fiisResponse);
     msg.forEach((msg) => client.sendMessage(from, msg));
+
+    if (!!fiisWithoutReport) {
+      retry++;
+      logger.info(`Trying again to get data for fiis: ${fiisWithoutReport.replaceAll(',', ' ')}. Attempt: ${retry}`);
+      await getFiisData(client, from, `!fiis ${fiisWithoutReport}`, retry);
+    }
   } catch (e) {
     logger.error(`Some error occurred: ${e}`);
     client.sendMessage(from, `Some error occurred: ${e}`);
   }
+
+  logger.info('Fiis data processed successfully.');
 };
 
 module.exports = getFiisData;
