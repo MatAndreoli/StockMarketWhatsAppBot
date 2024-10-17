@@ -74,19 +74,21 @@ const buildEventsMsg = (data) => {
 
 const getFiisData = async (client, from, message, retry = 0) => {
   try {
+    if (retry == 0) {
+      await client.sendMessage(
+        from,
+        'Scraping *https://fundsexplorer.com.br/funds/* para pegar os dados, isso pode levar um tempo...'
+      );
+    }
+
     if (retry >= MAX_RETRIES) {
-      client.sendMessage(from, 'Reached max attempts to get fiis data. Try again...');
+      client.sendMessage(from, `Reached max attempts to get fiis data. Try again: ${message}`);
       return;
     }
 
     const fiis = getMessageData(message);
 
     logger.info(`Retrieving FIIs: ${fiis.replaceAll(',', ' ')}`);
-
-    await client.sendMessage(
-      from,
-      'Scraping *https://fundsexplorer.com.br/funds/* para pegar os dados, isso pode levar um tempo...'
-    );
 
     const [fiisResponse, fiisWithoutReport] = await getNormalizedFiisData(fiis);
 
