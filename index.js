@@ -4,8 +4,6 @@ const logger = require("./logger/loggerWinston");
 const Scheduler = require("./scheduler");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
-console.log(process.env.URL_SHORTENER_URL)
-
 const client = new Client({
   puppeteer: {
     args: ["--no-sandbox"],

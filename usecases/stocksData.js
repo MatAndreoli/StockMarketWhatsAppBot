@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../logger/loggerWinston');
+const { azureFunctionUrl } = require('../settings.js');
 const { getMessageData, modifyStr } = require('./getMessageData');
 const normalizeData = require('./normalizeData');
 
@@ -97,7 +98,7 @@ const getStocksData = async (client, from, message) => {
     );
 
     const result = await axios.get(
-      `https://stockmarketfunction.azurewebsites.net/api/stocks?stocks=${stocks}`
+      `${azureFunctionUrl}/api/stocks?stocks=${stocks}`
     );
 
     const stocksData = await normalizeData(result.data);

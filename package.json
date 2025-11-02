@@ -14,9 +14,9 @@
     "axios": "^1.4.0",
     "node-schedule": "^2.1.1",
     "nodemon": "^3.1.3",
-    "puppeteer": "^21.2.1",
+    "puppeteer": "24.27.0",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.31.0",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main",
     "winston": "^3.9.0"
   }
 }
