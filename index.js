@@ -8,6 +8,11 @@ const client = new Client({
   puppeteer: {
     args: ["--no-sandbox"],
   },
+  webVersionCache: {
+    type: "remote",
+    remotePath:
+      "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1029384238-alpha.html",
+  },
   authStrategy: new LocalAuth(),
 });
 
