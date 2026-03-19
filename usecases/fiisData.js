@@ -9,64 +9,54 @@ const buildEventsMsg = (data) => {
 
   data.forEach((value) => {
     const options = { bold: true };
-    const status = value.status.includes('-') ? 'baixa' : 'alta';
+    const statusEmoji = value.status.includes('-') ? '🔴' : '🟢';
+    const statusLabel = value.status.includes('-') ? 'baixa' : 'alta';
     const rendDistribution = value.rend_distribution || {};
     const lastManagementReport = value.last_management_report || {};
 
-    const modifiedValues = {
-      code: modifyStr(value.code, options),
-      name: modifyStr(value.name, options),
-      type: modifyStr(value.fii_type, options),
-      currentPrice: modifyStr(value.current_price, options),
-      status: modifyStr(value.status, {
-        ...options,
-        span: { position: 'end', value: `${status} últ. dia` },
-      }),
-      averageDaily: modifyStr(value.average_daily, options),
-      lastDividend: modifyStr(value.last_dividend, options),
-      dividendYield: modifyStr(value.dividend_yield, {
-        ...options,
-        span: { position: 'end', value: 'últ. 12 meses' },
-      }),
-      lastDividendYield: modifyStr(value.last_dividend_yield, options),
-      netWorth: modifyStr(value.net_worth, options),
-      pvp: modifyStr(value.p_vp, options),
-      lastRendDistribution: {
-        dividend: modifyStr(rendDistribution.dividend, options),
-        incomePercentage: modifyStr(
-          rendDistribution.income_percentage,
-          options
-        ),
-        payDay: modifyStr(rendDistribution.future_pay_day, options),
-        dataCom: modifyStr(rendDistribution.data_com, options),
-      },
-      lastManagementReport: modifyStr(lastManagementReport.link, {
-        ...options,
-        span: { position: 'start', value: lastManagementReport.date },
-      }),
-    };
+    const b = (str) => modifyStr(str, options);
 
-    let str = `FII: ${modifiedValues.code}\n`;
-    str += `Nome: ${modifiedValues.name}\n`;
-    str += `Tipo: ${modifiedValues.type}\n`;
-    str += `Preço atual: ${modifiedValues.currentPrice}\n`;
-    str += `Status: ${modifiedValues.status}\n`;
-    str += `Liquidez Média Diária: ${modifiedValues.averageDaily}\n`;
-    str += `Último dividendo: ${modifiedValues.lastDividend}\n`;
-    str += `Dividend Yield: ${modifiedValues.dividendYield}\n`;
-    str += `Último Dividend Yield: ${modifiedValues.lastDividendYield}\n`;
-    str += `Patrimônio Líquido: ${modifiedValues.netWorth}\n`;
-    str += `P/VP: ${modifiedValues.pvp}\n`;
-    str += `Última Distribuição de Renda:\n`;
-    str += `- Dividendo: ${modifiedValues.lastRendDistribution.dividend}\n`;
-    str += `- Rendimento: ${modifiedValues.lastRendDistribution.incomePercentage}\n`;
-    str += `- Pagamento: ${modifiedValues.lastRendDistribution.payDay}\n`;
-    str += `- Data com: ${modifiedValues.lastRendDistribution.dataCom}\n`;
-    str += `Último Relatório Gerencial: ${modifiedValues.lastManagementReport}\n`;
-    str += `> \`Para mais relatórios desse FII, acesse: ${value.reports_link}\`\n`;
-    str += `> \`Para mais info sobre esse FII, acesse: ${value.url}\``;
+    const lines = [
+      `🏢 *${value.code}* — _${value.name || ''}_`,
+      `📋 Tipo: ${b(value.fii_type)}`,
+      ``,
+      `━━━ 💰 *Preço & Mercado* ━━━`,
+      `💵 Preço atual: ${b(value.current_price)}`,
+      `${statusEmoji} Status: ${b(value.status)} _(${statusLabel} últ. dia)_`,
+      `📊 Liquidez Média Diária: ${b(value.average_daily)}`,
+      ``,
+      `━━━ 📈 *Dividendos* ━━━`,
+      `💲 Último dividendo: ${b(value.last_dividend)}`,
+      `📈 DY (12m): ${b(value.dividend_yield)}`,
+      `📈 Último DY: ${b(value.last_dividend_yield)}`,
+      ``,
+      `━━━ 🏦 *Patrimônio* ━━━`,
+      `💼 Patrimônio Líquido: ${b(value.net_worth)}`,
+      `⚖️ P/VP: ${b(value.p_vp)}`,
+      ``,
+      `━━━ 📅 *Última Distribuição* ━━━`,
+      `  💲 Dividendo: ${b(rendDistribution.dividend)}`,
+      `  📊 Rendimento: ${b(rendDistribution.income_percentage)}`,
+      `  📆 Pagamento: ${b(rendDistribution.future_pay_day)}`,
+      `  📌 Data com: ${b(rendDistribution.data_com)}`,
+    ];
 
-    msg.push(str);
+    if (lastManagementReport.link) {
+      lines.push(``);
+      lines.push(`━━━ 📄 *Relatório Gerencial* ━━━`);
+      lines.push(`📎 ${lastManagementReport.date ? `_(${lastManagementReport.date})_ ` : ''}${lastManagementReport.link}`);
+    }
+
+    lines.push(``);
+    lines.push(`━━━━━━━━━━━━━━━━━━`);
+    if (value.reports_link) {
+      lines.push(`🔗 Relatórios: ${value.reports_link}`);
+    }
+    if (value.url) {
+      lines.push(`🔗 Mais info: ${value.url}`);
+    }
+
+    msg.push(lines.filter(l => l !== undefined).join('\n'));
   });
 
   return msg;
@@ -74,7 +64,7 @@ const buildEventsMsg = (data) => {
 
 const getFiisData = async (client, from, message, retry = 0) => {
   try {
-    if (retry == 0) {
+    if (retry === 0) {
       await client.sendMessage(
         from,
         'Scraping *https://fundsexplorer.com.br/funds/* para pegar os dados, isso pode levar um tempo...'
@@ -82,30 +72,31 @@ const getFiisData = async (client, from, message, retry = 0) => {
     }
 
     if (retry >= MAX_RETRIES) {
-      client.sendMessage(from, `Reached max attempts to get fiis data. Try again: ${message}`);
+      await client.sendMessage(from, `Reached max attempts to get fiis data. Try again: ${message}`);
       return;
     }
 
     const fiis = getMessageData(message);
-
     logger.info(`Retrieving FIIs: ${fiis.replaceAll(',', ' ')}`);
 
     const [fiisResponse, fiisWithoutReport] = await getNormalizedFiisData(fiis);
 
     const msg = buildEventsMsg(fiisResponse);
-    msg.forEach((msg) => client.sendMessage(from, msg));
+    for (const m of msg) {
+      client.sendMessage(from, m);
+    }
 
-    if (!!fiisWithoutReport) {
-      retry++;
-      logger.info(`Trying again to get data for fiis: ${fiisWithoutReport.replaceAll(',', ' ')}. Attempt: ${retry}`);
-      await getFiisData(client, from, `!fiis ${fiisWithoutReport}`, retry);
+    if (fiisWithoutReport && fiisWithoutReport.length > 0) {
+      logger.info(`Trying again to get data for fiis: ${fiisWithoutReport.replaceAll(',', ' ')}. Attempt: ${retry + 1}`);
+      await new Promise(r => setTimeout(r, 3000));
+      await getFiisData(client, from, `!fiis ${fiisWithoutReport}`, retry + 1);
+    } else {
+      logger.info('Fiis data processed successfully.');
     }
   } catch (e) {
     logger.error(`Some error occurred: ${e}`);
-    client.sendMessage(from, `Some error occurred: ${e}`);
+    await client.sendMessage(from, `Some error occurred: ${e}`);
   }
-
-  logger.info('Fiis data processed successfully.');
 };
 
 module.exports = getFiisData;
