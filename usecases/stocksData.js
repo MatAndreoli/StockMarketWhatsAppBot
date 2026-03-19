@@ -10,75 +10,59 @@ const buildEventsMsg = (data, showDividends) => {
   data.forEach((value) => {
     const options = { bold: true };
     const lastYearLbl = 'últ. 12 meses';
-    const status = value.status.includes('-') ? 'baixa' : 'alta';
-    const modifiedValues = {
-      code: modifyStr(value.code, options),
-      name: modifyStr(value.name, options),
-      operationSector: modifyStr(value.operation_sector, options),
-      currentPrice: modifyStr(value.current_price, options),
-      status: modifyStr(value.status, {
-        ...options,
-        span: { position: 'end', value: `${status} ${lastYearLbl}` },
-      }),
-      averageDaily: modifyStr(value.average_daily, options),
-      dividendYield: modifyStr(value.dividend_yield, {
-        ...options,
-        span: { position: 'end', value: lastYearLbl },
-      }),
-      netWorth: modifyStr(value.net_worth, options),
-      pvp: modifyStr(value.p_vp, options),
-      pl: modifyStr(value.p_l, options),
-      roe: modifyStr(value.roe, options),
-      cagr: modifyStr(value.cagr, {
-        ...options,
-        span: { position: 'end', value: 'lucros 5 anos' },
-      }),
-      netDebtEbitda: modifyStr(value.net_debt_ebitda, options),
-      totalStockPaper: modifyStr(value.total_stock_paper, options),
-      lastManagementReport: modifyStr(value.last_management_report?.link, {
-        ...options,
-        span: {
-          position: 'start',
-          value: value.last_management_report?.date || '',
-        },
-      }),
-    };
+    const statusEmoji = value.status.includes('-') ? '🔴' : '🟢';
+    const statusLabel = value.status.includes('-') ? 'baixa' : 'alta';
 
-    let str = `Ticker: ${modifiedValues.code}\n`;
-    str += `Nome: ${modifiedValues.name}\n`;
-    str += `Setor: ${modifiedValues.operationSector}\n`;
-    str += `Preço atual: ${modifiedValues.currentPrice}\n`;
-    str += `Status: ${modifiedValues.status}\n`;
-    str += `Liquidez Média Diária: ${modifiedValues.averageDaily}\n`;
-    str += `Dividend Yield: ${modifiedValues.dividendYield}\n`;
-    str += `Patrimônio Líquido: ${modifiedValues.netWorth}\n`;
-    str += `P/VP: ${modifiedValues.pvp}\n`;
-    str += `P/L: ${modifiedValues.pl}\n`;
-    str += `ROE: ${modifiedValues.roe}\n`;
-    str += `CAGR: ${modifiedValues.cagr}\n`;
-    str += `Dívida Líquida/EBITDA: ${modifiedValues.netDebtEbitda}\n`;
-    str += `Total de papéis: ${modifiedValues.totalStockPaper}\n`;
-    str += `Último Relatório Trimestral: ${modifiedValues.lastManagementReport}\n`;
+    const b = (str) => modifyStr(str, options);
+
+    const lines = [
+      `🏢 *${value.code}* — _${value.name || ''}_`,
+      `📋 Setor: ${b(value.operation_sector)}`,
+      ``,
+      `━━━ 💰 *Preço & Mercado* ━━━`,
+      `💵 Preço atual: ${b(value.current_price)}`,
+      `${statusEmoji} Status: ${b(value.status)} _(${statusLabel} ${lastYearLbl})_`,
+      `📊 Liquidez Média Diária: ${b(value.average_daily)}`,
+      ``,
+      `━━━ ⚖️ *Valuation e Retorno* ━━━`,
+      `📈 P/L: ${b(value.p_l)}`,
+      `⚖️ P/VP: ${b(value.p_vp)}`,
+      `🌟 ROE: ${b(value.roe)}`,
+      `📉 DY (12m): ${b(value.dividend_yield)}`,
+      `📈 CAGR _(lucros 5 anos)_: ${b(value.cagr)}`,
+      ``,
+      `━━━ 🏦 *Balanço* ━━━`,
+      `💼 Patrimônio Líquido: ${b(value.net_worth)}`,
+      `💳 Dívida/EBITDA: ${b(value.net_debt_ebitda)}`,
+      `🎫 Total de papéis: ${b(value.total_stock_paper)}`,
+    ];
+
+    if (value.last_management_report?.link) {
+      lines.push(``);
+      lines.push(`━━━ 📄 *Último Relatório* ━━━`);
+      lines.push(`📎 ${value.last_management_report.date ? `_(${value.last_management_report.date})_ ` : ''}${value.last_management_report.link}`);
+    }
 
     if (showDividends && value.dividends_history) {
-      str += `Histórico de Dividendos: \n`;
-      str += `*Tipo*\t\t*Data Com*\t\t*Pagamento*\t\t*Valor*\n`;
-
-      value.dividends_history.forEach((value, i) => {
-        str += `${modifyStr(value.type, options)}\t\t${modifyStr(
-          value.data_com,
-          options
-        )}\t\t${modifyStr(value.pay_day, options)}\t\t${modifyStr(
-          value.value,
-          options
-        )}\n`;
+      lines.push(``);
+      lines.push(`━━━ 💸 *Histórico de Dividendos* ━━━`);
+      lines.push(`*Tipo* | *Data Com* | *Pagamento* | *Valor*`);
+      
+      value.dividends_history.forEach((div) => {
+        lines.push(`${b(div.type)} | ${b(div.data_com)} | ${b(div.pay_day)} | ${b(div.value)}`);
       });
     }
 
-    str += `> \`Para mais relatórios dessa ação, acesse: ${value.reports_link}\`\n`;
-    str += `> \`Para mais info sobre essa ação, acesse: ${value.url}\``;
+    lines.push(``);
+    lines.push(`━━━━━━━━━━━━━━━━━━`);
+    if (value.reports_link) {
+      lines.push(`🔗 Relatórios: ${value.reports_link}`);
+    }
+    if (value.url) {
+      lines.push(`🔗 Mais info: ${value.url}`);
+    }
 
-    msg.push(str);
+    msg.push(lines.filter(l => l !== undefined).join('\n'));
   });
 
   return msg;
@@ -105,9 +89,10 @@ const getStocksData = async (client, from, message) => {
 
     const msg = buildEventsMsg(stocksData, showDividends);
     msg.forEach((msg) => client.sendMessage(from, msg));
+    logger.info('Stocks data processed successfully.');
   } catch (e) {
     logger.error(`Some error occurred: ${e}`);
-    client.sendMessage(from, `Some error occurred: ${e}`);
+    await client.sendMessage(from, `Some error occurred: ${e}`);
   }
 };
 
