@@ -22,7 +22,7 @@ const buildEventsMsg = (data) => {
       ``,
       `━━━ 💰 *Preço & Mercado* ━━━`,
       `💵 Preço atual: ${b(value.current_price)}`,
-      `${statusEmoji} Status: ${b(value.status)} _(${statusLabel} últ. dia)_`,
+      `${statusEmoji} Status: ${b(value.status)} _(${statusLabel} últ. 12 meses)_`,
       `📊 Liquidez Média Diária: ${b(value.average_daily)}`,
       ``,
       `━━━ 📈 *Dividendos* ━━━`,
