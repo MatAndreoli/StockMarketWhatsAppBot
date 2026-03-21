@@ -1,6 +1,6 @@
 # 📈 Stock Market WhatsApp Bot
 
-A WhatsApp bot that delivers real-time **FIIs** (Fundos de Investimento Imobiliário) and **Stocks** data straight to your chat. Send a command, and the bot scrapes market data through an Azure Function backend and replies with a rich, formatted summary — including price, dividends, valuation, reports, and more.
+A WhatsApp bot that delivers real-time **FIIs** (Fundos de Investimento Imobiliário) and **Stocks** data straight to your chat. Send a command, and the bot fetches market data through the [StockMarketScrapyAzFunc](https://github.com/MatAndreoli/StockMarketScrapyAzFunc) Azure Function backend and replies with a rich, formatted summary — including price, dividends, valuation, reports, and more.
 
 ## ✨ Features
 
@@ -90,7 +90,7 @@ Tickers can be separated by **spaces**, **commas**, or both.
 
 | Variable | Description |
 |---|---|
-| `AZURE_FUNCTION_URL` | Base URL of the Azure Function that scrapes market data |
+| `AZURE_FUNCTION_URL` | Base URL of the [StockMarketScrapyAzFunc](https://github.com/MatAndreoli/StockMarketScrapyAzFunc) Azure Function that scrapes market data |
 
 ### Scheduler (`scheduler/values.json`)
 
@@ -136,10 +136,10 @@ docker run -it stock-whatsapp-bot
                                      │  └─────┬──────┘  │
                                      └────────┼─────────┘
                                               │ HTTP
-                                     ┌────────▼─────────┐
-                                     │  Azure Function  │
-                                     │  (Web Scraper)   │
-                                     └──────────────────┘
+                                     ┌────────▼─────────────────────┐
+                                     │  Azure Function             │
+                                     │  (StockMarketScrapyAzFunc)  │
+                                     └─────────────────────────────┘
 ```
 
 ## 📦 Dependencies
@@ -152,6 +152,12 @@ docker run -it stock-whatsapp-bot
 | [node-schedule](https://github.com/node-schedule/node-schedule) | Cron-based job scheduling |
 | [winston](https://github.com/winstonjs/winston) | Structured logging |
 | [qrcode-terminal](https://github.com/gtanner/qrcode-terminal) | QR code display in terminal |
+
+## 🔗 Related Projects
+
+| Repository | Description |
+|---|---|
+| [StockMarketScrapyAzFunc](https://github.com/MatAndreoli/StockMarketScrapyAzFunc) | Azure Function that scrapes FII and Stock data from financial websites. This bot consumes its API endpoints to retrieve market data. |
 
 ## 📄 License
 
